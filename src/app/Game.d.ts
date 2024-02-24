@@ -1,9 +1,12 @@
 export type TileStatus = 'idle' | 'appearing' | 'merging';
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
-export type Tile = {
+export type TilePosition = {
     x: number;
     y: number;
+}
+
+export type Tile = TilePosition & {
     num: number;
     status: TileStatus;
 }

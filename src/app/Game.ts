@@ -46,8 +46,9 @@ class Game2048 {
   }
 
   private score: number = 0;
-  private backgroundTiles: Tile[] = [];
+  private backgroundTiles: TilePosition[] = [];
   private usedTiles: Tile[] = [];
+  private needAgain: Tile[] = [];
 
   constructor(private rendererFactory: RendererFactory2) {
     this.renderer = rendererFactory.createRenderer(null, null);
@@ -63,8 +64,6 @@ class Game2048 {
       this.backgroundTiles.push({
         x: i % 4,
         y: Math.floor(i / 4),
-        num: 0,
-        status: 'idle',
       });
     }
     this.score = 0;
@@ -72,22 +71,21 @@ class Game2048 {
   }
 
   public move(tile: Tile, directionBeforeChange: Direction): void {
+    
     let direction = directionBeforeChange.toLowerCase() as Direction;
 
-    if (!tile || !direction) {
-      return;
-    }
+    if (!tile || !direction) { return; }
     let y = 0;
     switch (direction) {
       case 'up':
         y = tile.y;
         break;
+    case 'left':
+        y = tile.x;
+        break;
       case 'down':
       case 'right':
         y = this.config.tileCount - 1;
-        break;
-      case 'left':
-        y = tile.x;
         break;
     }
 
@@ -111,29 +109,31 @@ class Game2048 {
           break;
       }
       let nextTile = this.getTileByCoordinates(next.x, next.y);
-      if (!nextTile || (nextTile.num !== 0 && nextTile.num !== tile.num))
-        return; // Nothing :(
-      // Merging
-      if (nextTile.num === tile.num) {
-        this.makeMerging(nextTile.x, nextTile.y, true);
-        this.addNumberToTile(nextTile.x, nextTile.y);
-        nextTile.num++;
-        this.resetTile(tile.x, tile.y);
-        this.removeTile(tile.x, tile.y);
-        let aTile = this.usedTiles.filter(
-          (xtile: Tile) => xtile.x === next.x && xtile.y === next.y
-        )[0];
-        if (aTile) {
-          this.move(aTile, direction);
+      if (nextTile && nextTile.num !== 0) {
+        if (tile.num === nextTile.num) {
+            // Merging
+            this.makeMerging(nextTile.x, nextTile.y, true);
+            this.addNumberToTile(nextTile.x, nextTile.y);
+            nextTile.num++;
+            this.resetTile(tile.x, tile.y);
+            this.removeTile(tile.x, tile.y);
+            let aTile = this.usedTiles.filter(
+            (xtile: Tile) => xtile.x === next.x && xtile.y === next.y
+            )[0];
+            if (aTile) {
+            this.move(aTile, direction);
+            }
+            setTimeout(() => {
+            this.makeMerging(nextTile.x, nextTile.y, false);
+            }, 350);
+        } else {
+            // Moving to prevent blocking
+            this.needAgain.push(tile);
         }
-        setTimeout(() => {
-          this.makeMerging(nextTile.x, nextTile.y, false);
-        }, 350);
+        return;
       }
-
       // Moving
-      if (nextTile.num === 0) {
-        this.resetTile(tile.x, tile.y);
+      if ((!nextTile || nextTile.num === 0) && ((tile.x > 0 && direction == 'left') || (tile.x < this.config.tileCount - 1 && direction == 'right') || (tile.y > 0 && direction == 'up') || (tile.y < this.config.tileCount - 1 && direction == 'down'))) {
         switch (direction) {
           case 'up':
             tile.y--;
@@ -151,26 +151,29 @@ class Game2048 {
             // Huh?
             break;
         }
-        nextTile.num = tile.num;
       }
     }
   }
 
   public listenEvents(): void {
-    this.renderer.listen(window, 'keydown', (event: KeyboardEvent) => {
-      if (!event.key) return;
-      switch (event.key) {
-        case 'ArrowUp':
-        case 'ArrowDown':
-        case 'ArrowLeft':
-        case 'ArrowRight':
-            this.generateTile(1);   
-            this.usedTiles.forEach((tile: Tile) => {
+    fromEvent(window, 'keydown').pipe(
+        debounceTime(25)
+      ).subscribe((event: any): void => {
+        if (!event.key) return;
+        switch (event.key) {
+            case 'ArrowUp':
+            case 'ArrowDown':
+            case 'ArrowLeft':
+            case 'ArrowRight':
+                // this.generateTile(1);   
                 let direction = event.key.slice(5) as Direction;
-                this.move(tile, direction);
-            });
-            break;
-      }
+                this.needAgain = [];
+                this.usedTiles.forEach((tile: Tile) => {
+                    this.move(tile, direction);
+                });
+                this.needAgain.forEach((tile: Tile) => this.move(tile, direction));
+                break;
+        }
     });
   }
 
@@ -182,14 +185,18 @@ class Game2048 {
     );
   }
 
-  public getEmptyTiles(): Tile[] {
-    return this.backgroundTiles.filter((tile: Tile) => tile.num === 0);
+  public getEmptyTiles(): TilePosition[] {
+    let empty: TilePosition[] = JSON.parse(JSON.stringify(this.backgroundTiles));
+    this.usedTiles.forEach((tile: Tile) => {
+        empty.splice(empty.findIndex((deleteTile: TilePosition) => deleteTile.x === tile.x && deleteTile.y === tile.y), 1);
+    });
+    return empty;
   }
 
   public getTileByCoordinates(x: number, y: number): Tile {
-    return this.backgroundTiles.filter(
+    return this.usedTiles.filter(
       (tile: Tile) => tile.x === x && tile.y === y
-    )[0];
+    )?.[0];
   }
 
   public getUsedTiles(): Tile[] {
@@ -234,7 +241,6 @@ class Game2048 {
         return;
       }
       let tile = emptyTiles[ Math.floor( Math.random() * emptyTiles.length ) ];
-      tile.num = 1;
       this.usedTiles.push({
         x: tile.x,
         y: tile.y,
@@ -252,16 +258,18 @@ class Game2048 {
     }
   }
 
-  public getAllEmptyTiles(): Tile[] {
-    let t: Tile[] = [];
-    for (let i = 0; i < this.config.tileCount * this.config.tileCount; i++) {
-      t.push({ x: i % 4, y: Math.floor(i / 4), num: 0, status: 'idle' });
-    }
-    return t;
+  public getAllEmptyTiles(): TilePosition[] {
+    return this.backgroundTiles;
   }
+
+  public getInformation(): void {
+    console.log(this.usedTiles);
+    console.log(this.backgroundTiles);
+  }
+
 }
 
-import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
+import { Directive, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 // TYPES
 import type {
   Tile,
@@ -269,6 +277,9 @@ import type {
   TileStatus,
   GameConfig,
   Direction,
+  TilePosition,
 } from './Game.d';
-export type { Tile, TileConfig, TileStatus, GameConfig, Direction };
+import { fromEvent } from 'rxjs/internal/observable/fromEvent';
+import { debounceTime } from 'rxjs';
+export type { Tile, TileConfig, TileStatus, GameConfig, Direction, TilePosition };
 export { Game2048 };
