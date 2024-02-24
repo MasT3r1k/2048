@@ -71,36 +71,89 @@ class Game2048 {
     this.generateTile(2);
   }
 
-  public moveUpTest(): void {
-    this.usedTiles.forEach((tile: Tile) => {
-      if (tile.y === 0) return;
-      let y = tile.y;
-      for (let i = 0; i < y; i++) {
-        let upperTile = this.getTileByCoordinates(tile.x, tile.y - 1);
-        if (upperTile.num !== 0 && upperTile.num !== tile.num) return; // Nothing :(
+  public move(tile: Tile, directionBeforeChange: Direction): void {
+    let direction = directionBeforeChange.toLowerCase() as Direction;
 
-        if (upperTile.num === tile.num) {
-          // Merging
-          console.log('Merging');
-          this.makeMerging(upperTile.x, upperTile.y, true);
-          this.addNumberToTile(upperTile.x, upperTile.y);
-          upperTile.num++;
-          this.resetTile(tile.x, tile.y);
-          this.removeTile(tile.x, tile.y);
-          setTimeout(() => {
-            this.makeMerging(upperTile.x, upperTile.y, false);
-          }, 350);
-          this.moveUpTest();
-        }
+    if (!tile || !direction) {
+      return;
+    }
+    let y = 0;
+    switch (direction) {
+      case 'up':
+        y = tile.y;
+        break;
+      case 'down':
+      case 'right':
+        y = this.config.tileCount - 1;
+        break;
+      case 'left':
+        y = tile.x;
+        break;
+    }
 
-        if (upperTile.num === 0) {
-          // Moving
-          this.resetTile(tile.x, tile.y);
-          tile.y--;
-          upperTile.num = tile.num;
-        }
+    for (let i = 0; i < y; i++) {
+      let next = { x: tile.x, y: tile.y };
+      switch (direction) {
+        case 'up':
+          next.y--;
+          break;
+        case 'down':
+          next.y++;
+          break;
+        case 'left':
+          next.x--;
+          break;
+        case 'right':
+          next.x++;
+          break;
+        default:
+          // Huh?
+          break;
       }
-    });
+      let nextTile = this.getTileByCoordinates(next.x, next.y);
+      if (!nextTile || (nextTile.num !== 0 && nextTile.num !== tile.num))
+        return; // Nothing :(
+      // Merging
+      if (nextTile.num === tile.num) {
+        this.makeMerging(nextTile.x, nextTile.y, true);
+        this.addNumberToTile(nextTile.x, nextTile.y);
+        nextTile.num++;
+        this.resetTile(tile.x, tile.y);
+        this.removeTile(tile.x, tile.y);
+        let aTile = this.usedTiles.filter(
+          (xtile: Tile) => xtile.x === next.x && xtile.y === next.y
+        )[0];
+        if (aTile) {
+          this.move(aTile, direction);
+        }
+        setTimeout(() => {
+          this.makeMerging(nextTile.x, nextTile.y, false);
+        }, 350);
+      }
+
+      // Moving
+      if (nextTile.num === 0) {
+        this.resetTile(tile.x, tile.y);
+        switch (direction) {
+          case 'up':
+            tile.y--;
+            break;
+          case 'down':
+            tile.y++;
+            break;
+          case 'left':
+            tile.x--;
+            break;
+          case 'right':
+            tile.x++;
+            break;
+          default:
+            // Huh?
+            break;
+        }
+        nextTile.num = tile.num;
+      }
+    }
   }
 
   public listenEvents(): void {
@@ -108,50 +161,15 @@ class Game2048 {
       if (!event.key) return;
       switch (event.key) {
         case 'ArrowUp':
-          this.usedTiles.forEach((tile: Tile) => {
-            if (tile.y === 0) return;
-            let y = tile.y;
-            for (let i = 0; i < y; i++) {
-              let upperTile = this.getTileByCoordinates(tile.x, tile.y - 1);
-              if (upperTile.num !== 0 && upperTile.num !== tile.num) return; // Nothing :(
-
-              if (upperTile.num === tile.num) {
-                // Merging
-                console.log('Merging');
-                this.makeMerging(upperTile.x, upperTile.y, true);
-                this.addNumberToTile(upperTile.x, upperTile.y);
-                upperTile.num++;
-                this.resetTile(tile.x, tile.y);
-                this.removeTile(tile.x, tile.y);
-                setTimeout(() => {
-                  this.makeMerging(upperTile.x, upperTile.y, false);
-                }, 350);
-              }
-
-              if (upperTile.num === 0) {
-                // Moving
-                this.resetTile(tile.x, tile.y);
-                tile.y--;
-                upperTile.num = tile.num;
-              }
-            }
-          });
-          break;
         case 'ArrowDown':
-          this.usedTiles.forEach((tile: Tile) => {
-            if (tile.y === this.config.tileCount - 1) return;
-            let y = tile.y;
-            for (let i = this.config.tileCount - 1; i > y; i--) {
-              let downTile = this.getTileByCoordinates(tile.x, tile.y + 1);
-              if (downTile.num !== 0 && downTile.num !== tile.num) return;
-              if (downTile.num === 0) {
-                this.resetTile(tile.x, tile.y);
-                tile.y++;
-                downTile.num = tile.num;
-              }
-            }
-          });
-          break;
+        case 'ArrowLeft':
+        case 'ArrowRight':
+            this.generateTile(1);   
+            this.usedTiles.forEach((tile: Tile) => {
+                let direction = event.key.slice(5) as Direction;
+                this.move(tile, direction);
+            });
+            break;
       }
     });
   }
@@ -179,13 +197,16 @@ class Game2048 {
   }
 
   public makeMerging(x: number, y: number, merging: boolean = true): void {
-    this.usedTiles.filter(
+    let tile = this.usedTiles.filter(
       (tile: Tile) => tile.x === x && tile.y === y
-    )[0].status = 'merging';
+    )[0];
+    if (!tile) return;
+    tile.status = merging ? 'merging' : 'idle';
   }
 
   public resetTile(x: number, y: number): void {
     let tile = this.getTileByCoordinates(x, y);
+    if (!tile) return;
     tile.num = 0;
   }
 
@@ -198,14 +219,21 @@ class Game2048 {
   }
 
   public addNumberToTile(x: number, y: number): void {
-    this.usedTiles.filter((tile: Tile) => tile.x === x && tile.y === y)[0]
-      .num++;
+    let tile = this.usedTiles.filter(
+      (tile: Tile) => tile.x === x && tile.y === y
+    )[0];
+    if (!tile) return;
+    tile.num++;
   }
 
   public generateTile(num: number = 1): void {
     for (let i = 0; i < num; i++) {
       let emptyTiles = this.getEmptyTiles();
-      let tile = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
+      if (emptyTiles.length === 0) {
+        console.error('Game over!');
+        return;
+      }
+      let tile = emptyTiles[ Math.floor( Math.random() * emptyTiles.length ) ];
       tile.num = 1;
       this.usedTiles.push({
         x: tile.x,
@@ -213,18 +241,14 @@ class Game2048 {
         num: 1,
         status: 'appearing',
       });
-      setTimeout(
-        () => {
-            let usedTile = this.usedTiles.filter(
-                (usedTile: Tile) =>
-                (usedTile.x === tile.x &&
-                usedTile.y === tile.y &&
-                tile.status == 'appearing')
-            )[0];
+      setTimeout(() => {
+        let usedTile = this.usedTiles.filter(
+          (usedTile: Tile) => usedTile.x === tile.x && usedTile.y === tile.y
+        )[0];
 
-            if (!usedTile) return;
-            usedTile.status = 'idle';
-        }, 200);
+        if (!usedTile) return;
+        usedTile.status = 'idle';
+      }, 200);
     }
   }
 
@@ -239,6 +263,12 @@ class Game2048 {
 
 import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 // TYPES
-import type { Tile, TileConfig, TileStatus, GameConfig } from './Game.d';
-export type { Tile, TileConfig, TileStatus, GameConfig };
+import type {
+  Tile,
+  TileConfig,
+  TileStatus,
+  GameConfig,
+  Direction,
+} from './Game.d';
+export type { Tile, TileConfig, TileStatus, GameConfig, Direction };
 export { Game2048 };
