@@ -1,7 +1,10 @@
+export type TileStatus = 'idle' | 'appearing' | 'merging';
+
 export type Tile = {
     x: number;
     y: number;
     num: number;
+    status: TileStatus;
 }
   
 export type GameConfig = {

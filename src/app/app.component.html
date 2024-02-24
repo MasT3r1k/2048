@@ -26,8 +26,8 @@
           width: Game.getTileSize() + 'px',
           height: Game.getTileSize() + 'px',
 
-          backgroundColor: tileTypes[0].background,
-          color: tileTypes[0].color
+          backgroundColor: Game.getTileInfo(0).background,
+          color: Game.getTileInfo(0).color
         }"
       ></div>
 
@@ -35,7 +35,9 @@
         [ngClass]="{
           tile: true,
           'tile-background': tile.num === 0,
-          'no-animation': tile.num === 0
+          'no-animation': tile.num === 0,
+          'appearing': tile.status === 'appearing',
+          'merging': tile.status === 'merging'
         }"
         *ngFor="let tile of Game.getUsedTiles()"
         [ngStyle]="{
@@ -50,8 +52,8 @@
           width: Game.getTileSize() + 'px',
           height: Game.getTileSize() + 'px',
 
-          backgroundColor: tileTypes[tile.num].background,
-          color: tileTypes[tile.num].color
+          backgroundColor: Game.getTileInfo(tile.num).background,
+          color: Game.getTileInfo(tile.num).color
         }"
       >
         {{ getMath().pow(2, tile.num) }}
