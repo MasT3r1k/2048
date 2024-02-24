@@ -1,0 +1,102 @@
+/* Colors */
+:host {
+    --radius: 8px;
+    --background: #ad9d8f;
+    --tile-empty: #c1b3a4;
+}
+
+/* Main */
+.centered {
+    margin: 0 auto;
+    max-width: 700px;
+}
+
+/* Header*/
+
+header {
+    padding: 2rem;
+}
+
+header h2 {
+    font-size: 4.25rem;
+    font-weight: bold;
+    line-height: 5rem;
+}
+
+/* content */
+
+main > .game {
+    background-color: var(--background);
+    margin: 0 auto;
+    position: relative;
+    border-radius: var(--radius);
+}
+
+main > .game > .tile {
+    transition: all 100ms ease-in-out;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: var(--radius);
+    display: grid;
+    place-items: center;
+    font-size: 55px;
+    font-weight: bold;
+    z-index: 5;
+    user-select: none;
+    animation: appear 200ms ease 100ms;
+    animation-fill-mode: backwards;
+    box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0), inset 0 0 0 1px rgba(255, 255, 255, 0);
+}
+
+main > .game > .tile.tile-background {
+    z-index: 3!important;
+}
+
+main > .game > .tile.no-animation {
+    transition: none!important;
+    animation: none!important;
+}
+
+main > .game > .tile:empty {
+    background-color: var(--tile-empty);
+}
+
+@keyframes pop {
+    0% {
+        -webkit-transform: scale(0);
+        -moz-transform: scale(0);
+        -ms-transform: scale(0);
+        transform: scale(0);
+    }
+    50% {
+        -webkit-transform: scale(1.2);
+        -moz-transform: scale(1.2);
+        -ms-transform: scale(1.2);
+        transform: scale(1.2);
+    }
+    100% {
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+    }
+}
+
+@keyframes appear {
+    0% {
+        opacity: 0;
+        -webkit-transform: scale(0);
+        -moz-transform: scale(0);
+        -ms-transform: scale(0);
+        transform: scale(0);
+    }
+
+    100% {
+        opacity: 1;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+    }
+}
