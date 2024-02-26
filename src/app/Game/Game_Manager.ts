@@ -1,6 +1,5 @@
-import { ChangeDetectorRef } from "@angular/core";
 import { Grid } from "./Grid";
-import { TileCeil, TileOrNull, TilePosition } from "./Tile";
+import { TileOrNull, TilePosition } from "./Tile";
 import { Tile } from "./Tile";
 import { GameStatuses, Direction } from './Game_Manager.d';
 export type { GameStatuses, Direction }
@@ -12,20 +11,39 @@ export class Game2048 {
     private width: number = 500;
     private margin: number = 12;
 
-    public gameStatus: GameStatuses = 'running';
+    public gameStatus: GameStatuses = 'paused';
 
     constructor(
-        size: number = 4,
-        maxScore: number = 2048,
-        public grid: Grid,
-        private changeDetectorRef: ChangeDetectorRef
-
+        public grid: Grid = new Grid(4),
     ) {
+    }
+
+    // Setup game
+    public setSize(size: number): Game2048 {
         this.sizeGrid = size;
-        this.requiredScore = maxScore;
+        this.grid = new Grid(size);
+        return this;
+    }
+
+    public setStartingTiles(tiles: number): Game2048 {
+        this.startingTiles = tiles;
+        return this;
+    }
+
+    public setScore(score: number): Game2048 {
+        this.requiredScore = score;
+        return this;
+    }
+
+    public startGame(): Game2048 {
+        if (this.sizeGrid === 0 || this.startingTiles === 0 || this.requiredScore === 0) return this;
+        this.gameStatus = 'beforeStart';
         for(let i = 0;i < this.startingTiles;i++) {
             this.addRandomTile();
         }
+
+
+        return this;
     }
 
     /**
