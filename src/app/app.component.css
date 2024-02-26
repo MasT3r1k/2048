@@ -14,13 +14,13 @@
 /* Header*/
 
 header {
-    padding: 2rem;
+    padding: 2rem 0;
 }
 
 header h2 {
-    font-size: 4.25rem;
+    font-size: 5rem;
     font-weight: bold;
-    line-height: 5rem;
+    line-height: 7.5rem;
 }
 
 /* content */
@@ -106,4 +106,9 @@ main > .game > .tile:empty {
         -ms-transform: scale(1);
         transform: scale(1);
     }
+}
+
+p.description {
+    margin-top: 50px;
+    margin-bottom: 10px;
 }

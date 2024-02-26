@@ -1,6 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 @import url('app/font.css');
 
+:root {
+    --color: #776e65;
+}
+
 *, *::before, *::after {
     box-sizing: border-box;
 }
@@ -9,8 +13,14 @@ h1, h2, h3, h4, h5, h6, p {
     margin: 0;
 }
 
+p {
+    line-height: 1.65;
+}
+
 body {
     margin: 0;
+    font-size: 18px;
+    color: var(--color);
     height: 100vh;
     position: relative;
     font-family: 'Clear Sans', sans-serif;
