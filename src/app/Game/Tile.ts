@@ -25,10 +25,14 @@ export class Tile {
     public value: number = 2;
 
     public merged: [Tile, Tile] | null = null;
+    public appearing: boolean = true;
 
     constructor(position: TilePosition, value: number = 2) {
         this.position = position;
         this.value = value || 2;
+        setTimeout(() => {
+            this.appearing = false;
+        }, 300);
     }
 
     public updatePos(position: TilePosition): void {

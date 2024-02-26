@@ -45,7 +45,9 @@
 
       <div
         [ngClass]="{
-          tile: true
+          tile: true,
+          appearing: tile.appearing,
+          merging: tile.merged
         }"
         *ngFor="let tile of Game.grid.getAllTiles()"
         [ngStyle]="{
