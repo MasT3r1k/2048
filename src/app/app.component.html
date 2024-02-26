@@ -1,31 +1,43 @@
-<div class="centered" [ngStyle]="{ width: newGame.getGameWidth() + 'px' }">
+<div class="centered" [ngStyle]="{ width: Game.getGameWidth() + 'px' }">
   <header>
     <h2>2048</h2>
-    <!-- <p (click)="Game.startGame()">New Game</p> -->
-    <h1 *ngIf="newGame.gameStatus == 'gameOver'">Game Over</h1>
+    <div class="btn" (click)="startGame()">Nová hra</div>
   </header>
   <main>
+
+    <div
+      *ngIf="Game.gameStatus != 'running' && Game.gameStatus != 'beforeStart'"
+      class="gameStatus"
+      [ngStyle]="{
+        width: Game.getGameWidth()  + 'px',
+        height: Game.getGameWidth()  + 'px'
+      }"  
+    >
+      <p *ngIf="Game.gameStatus == 'gameOver'">PROHRÁL JSI!</p>
+      <p *ngIf="Game.gameStatus == 'gameWon'">VYHRÁL JSI!</p>
+    </div>
+
     <div
       class="game"
       [ngStyle]="{
-        width: newGame.getGameWidth()  + 'px',
-        height: newGame.getGameWidth()  + 'px'
+        width: Game.getGameWidth()  + 'px',
+        height: Game.getGameWidth()  + 'px'
       }"
     >
       <div
         class="tile tile-background no-animation"
-        *ngFor="let tile of newGame.grid.generateEmptyGrid()"
+        *ngFor="let tile of Game.grid.generateEmptyGrid()"
         [ngStyle]="{
           translate:
-            newGame.getGameMargin() * (tile.position.x + 1) +
-            getMath().floor(tile.position.x) * newGame.getTileSize() +
+          Game.getGameMargin() * (tile.position.x + 1) +
+            getMath().floor(tile.position.x) * Game.getTileSize() +
             'px ' +
-            (newGame.getGameMargin() * (getMath().floor(tile.position.y) + 1) +
-              getMath().floor(tile.position.y) * newGame.getTileSize()) +
+            (Game.getGameMargin() * (getMath().floor(tile.position.y) + 1) +
+              getMath().floor(tile.position.y) * Game.getTileSize()) +
             'px',
 
-          width: newGame.getTileSize() + 'px',
-          height: newGame.getTileSize() + 'px',
+          width: Game.getTileSize() + 'px',
+          height: Game.getTileSize() + 'px',
 
           backgroundColor: getTileType(0).background
         }"
@@ -35,12 +47,12 @@
         [ngClass]="{
           tile: true
         }"
-        *ngFor="let tile of newGame.grid.getAllTiles()"
+        *ngFor="let tile of Game.grid.getAllTiles()"
         [ngStyle]="{
           translate: TilePositionFormat(getTilePosition(tile)),
 
-          width: newGame.getTileSize() + 'px',
-          height: newGame.getTileSize() + 'px',
+          width: Game.getTileSize() + 'px',
+          height: Game.getTileSize() + 'px',
 
           backgroundColor: getTileType(tile.value).background,
           color: getTileType(tile.value).color,
@@ -53,8 +65,6 @@
   <footer>
 
     <p class="description"><b>JAK HRÁT:</b> Pro pohyb s dlaždicemi používej šipky. Když se dvě dlaždice se stejným číslem dotknou, spojí se do jedné.</p>
-    <!-- <p (click)="Game.getInformation()">Click to get info</p>
-    <p (click)="Game.generateTile(1)">Generate tile</p> -->
 
   </footer>
 </div>

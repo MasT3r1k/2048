@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 // import { Game2048 as oldgame } from './Game';
-import { Direction, Game2048 as newgame } from './Game/Game_Manager';
+import { Direction, Game2048 } from './Game/Game_Manager';
 import { Grid } from './Game/Grid';
 import { Tile, getTileType, TilePosition } from './Game/Tile';
 import { fromEvent } from 'rxjs/internal/observable/fromEvent';
@@ -19,14 +19,12 @@ export class AppComponent implements OnInit {
 
   getTileType = getTileType;
 
-  declare newGame: newgame;
+  declare Game: Game2048;
   constructor(
     // public Game: oldgame, 
     private changeDetectorRef: ChangeDetectorRef
     
-  ) {
-    this.newGame = new newgame(4, 2048, new Grid(4), changeDetectorRef);
-  }
+  ) {}
 
   ngOnInit(): void {
     fromEvent(window, 'keydown').pipe().subscribe((event: any) => {
@@ -37,11 +35,17 @@ export class AppComponent implements OnInit {
         case 'ArrowLeft':
         case 'ArrowRight':
           let direction = (event.key as string).slice(5).toLowerCase() as Direction;
-          this.newGame.moveEvent(direction);
+          this.Game.moveEvent(direction);
           break;
-
       }
-    })
+    });
+    
+    this.startGame();
+  }
+
+  public startGame(): void {
+    this.Game = new Game2048(4, 2048, new Grid(4), this.changeDetectorRef);
+
   }
 
   public getTilePosition(tile: Tile): TilePosition {
@@ -53,8 +57,8 @@ export class AppComponent implements OnInit {
 
     
     return {
-      x: this.newGame.getGameMargin() * (pos.x + 1) + this.getMath().floor(pos.x) * this.newGame.getTileSize(),
-      y: this.newGame.getGameMargin() * (this.getMath().floor(pos.y) + 1) + this.getMath().floor(pos.y) * this.newGame.getTileSize()
+      x: this.Game.getGameMargin() * (pos.x + 1) + this.getMath().floor(pos.x) * this.Game.getTileSize(),
+      y: this.Game.getGameMargin() * (this.getMath().floor(pos.y) + 1) + this.getMath().floor(pos.y) * this.Game.getTileSize()
     };
 
   }

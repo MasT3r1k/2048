@@ -1,7 +1,7 @@
 /* Colors */
 :host {
     --radius: 8px;
-    --background: #ad9d8f;
+    --background: rgb(173, 157, 143);
     --tile-empty: #c1b3a4;
 }
 
@@ -9,6 +9,16 @@
 .centered {
     margin: 0 auto;
     max-width: 700px;
+}
+
+.btn {
+    background-color: var(--background);
+    color: #fff;
+    width: fit-content;
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    user-select: none;
 }
 
 /* Header*/
@@ -24,6 +34,26 @@ header h2 {
 }
 
 /* content */
+
+main {
+    position: relative;
+}
+
+main > .gameStatus {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3.5rem;
+    line-height: 4rem;
+    font-weight: bold;
+    z-index: 5000;
+    background-color: rgba(173, 157, 143, .72);
+}
 
 main > .game {
     background-color: var(--background);
@@ -63,10 +93,6 @@ main > .game > .tile.tile-background {
 main > .game > .tile.no-animation {
     transition: none!important;
     animation: none!important;
-}
-
-main > .game > .tile:empty {
-    background-color: var(--tile-empty);
 }
 
 @keyframes pop {

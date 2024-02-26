@@ -28,8 +28,6 @@ export class Game2048 {
         }
     }
 
-
-
     /**
      * Compare 2 tiles position
      * @param first position of one tile
@@ -65,10 +63,10 @@ export class Game2048 {
 
     public getDirectionVector(direction: Direction): TilePosition {
         let map: Record<Direction, TilePosition> = {
-            up:    { x: 0, y: -1 },
-            down:  { x: 0, y: 1 },
-            left:  { x: -1, y: 0 },
-            right: { x: 1, y: 0 }
+            up:    { x:  0, y: -1 },
+            down:  { x:  0, y:  1 },
+            left:  { x: -1, y:  0 },
+            right: { x:  1, y:  0 }
         }
         return map[direction];
     }
